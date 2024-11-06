@@ -14,19 +14,22 @@ all_cars = {}
 
 # }
 
-def add_car(car_id, model, year, current_bid, description, location):
+def add_car(car_id, model, year, current_bid, description, location, time_left):
     all_cars[car_id] = {
         "Model": model,
         "Year": year,
         "Current Bid": current_bid,
         "Description": description,
-        "Location": location
+        "Location": location,
+        "Time Left": time
     }
 
 
 
 def scrape_cars_n_bids():
-    """Scrapes the models of all cars for auction on CarsandBids"""
+    """Scrapes the models of all cars for auction on CarsandBids
+    Current issues: doesn't get bids fast enough
+    """
 
     carsnbids = 'https://carsandbids.com/'
 
@@ -45,11 +48,13 @@ def scrape_cars_n_bids():
     current_bids = driver.find_elements(By.XPATH, '//li[@class="auction-item "]//span[@class="bid-value"]') # get list of current bids
     descriptions = driver.find_elements(By.XPATH, '//li[@class="auction-item "]//p[@class="auction-subtitle"]') # get list of descriptions
     locations = driver.find_elements(By.XPATH, '//li[@class="auction-item "]//p[@class="auction-loc"]') # get list of locations
+    times_left = driver.find_elements(By.XPATH, '//span[@class="ticking  "]') # gets time left of the auction
 
     print(len(car_titles))
     print(len(current_bids))
     print(len(descriptions))
     print(len(locations))
+    print(len(times_left))
 
     time.sleep(5)
 
@@ -59,11 +64,17 @@ def scrape_cars_n_bids():
         car_id = i + 1
         year = car_text.split()[0]
         model = " ".join(car_text.split()[1:])
-        # current_bid = current_bids[i].text
-        current_bid = "null"
+        try: 
+            # still doesn't properly scrape the time
+            time_left = times_left[i].text
+            current_bid = current_bids[i].text
+        except IndexError:
+            current_bid = "null"
+            time_left = "null"
         description = descriptions[i].text
         location = locations[i].text
-        add_car(car_id, model, year, current_bid, description, location)
+        
+        add_car(car_id, model, year, current_bid, description, location, time_left)
         # except IndexError:
         #     print("index error")
     
@@ -76,12 +87,15 @@ def scrape_cars_n_bids():
 
     driver.quit()
 
-scrape_cars_n_bids()
-print(all_cars)
+# scrape_cars_n_bids()
+# print(all_cars)
 
 def scrape_bat():
-    """Scrapes the models of all cars for auction on Bring a Trailer"""
+    """Scrapes the models of all cars for auction on Bring a Trailer
+    Consider adding feature that has user input zip code and finds the closest auction in replacement for the "location" key
+    """
     ## currently not working, need to separate keys
+
     bat = "https://bringatrailer.com/auctions/"
 
     cService = Service(executable_path="chromedriver.exe")
@@ -122,19 +136,51 @@ def scrape_bat():
             
         count += 1
 
-    cars = driver.find_elements(By.XPATH, '//a[@class="listing-card bg-white-transparent"]//div[@class="content"]//h3')
+    # cars = driver.find_elements(By.XPATH, '//a[@class="listing-card bg-white-transparent"]//div[@class="content"]//h3')
+    car_titles = driver.find_elements(By.XPATH,'//div[@class="content-main"]//h3[@data-bind="html: title"]') # get list of car names, split into year and model when iterating
+    current_bids = driver.find_elements(By.XPATH, '//span[@class="bid-formatted bold"]') # get list of current bids
+    descriptions = driver.find_elements(By.XPATH, '//div[@class="item-excerpt"]') # get list of descriptions
+    # locations = driver.find_elements(By.XPATH, '//li[@class="auction-item "]//p[@class="auction-loc"]') # get list of locations
+    time_left_countdowns = driver.find_elements(By.XPATH, '//span[@class="countdown-text final-countdown"]') # get time left of auction < 24hrs
+    times_left_days = driver.find_elements(By.XPATH, '//span[@class="countdown-text"]') # get days left of the auction
+
+    # time_left_countdowns.extend(times_left_days)
+    combine_times_left = time_left_countdowns + times_left_days
+    
 
     time.sleep(1)
-    for car in cars:
-        car_names.append(car.text)
+
+    for i in range (len(car_titles)):
+        # try:
+        car_text = car_titles[i].text
+        car_id = i + 1
+        year = car_text.split()[0]
+        model = " ".join(car_text.split()[1:])
+        
+        try: 
+            time_left = combine_times_left[i].text
+            current_bid = current_bids[i].text
+        except (IndexError, TypeError) as e:
+            # print(e)
+            current_bid = "null"
+            time_left = "null"
+        description = descriptions[i].text
+        location = "null"
+        
+        add_car(car_id, model, year, current_bid, description, location, time_left)
+    
 
     print("end bat")
 
+    print(len(car_titles))
+    print(len(current_bids))
+    print(len(descriptions))
+    # print(len(locations))
+    print(len(combine_times_left))
+
     driver.quit()
 
+scrape_bat()
+print(all_cars)
 
-# scrape_cars_n_bids()
-# print(car_names, len(car_names))
-# scrape_bat()
-# print(car_names, len(car_names))
 
