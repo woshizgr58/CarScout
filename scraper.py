@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import time
+import re
 
 
 all_cars = {}
@@ -28,7 +29,9 @@ def add_car(car_id, model, year, current_bid, description, location, time_left):
 
 def scrape_cars_n_bids():
     """Scrapes the models of all cars for auction on CarsandBids
-    Current issues: doesn't get bids fast enough
+    Known problems: 
+    - doesn't get bids fast enough
+    - time isn't displayed in the list properly
     """
 
     carsnbids = 'https://carsandbids.com/'
@@ -86,6 +89,7 @@ def scrape_cars_n_bids():
     print("end cars and bids")
 
     driver.quit()
+    return all_cars
 
 # scrape_cars_n_bids()
 # print(all_cars)
@@ -93,6 +97,9 @@ def scrape_cars_n_bids():
 def scrape_bat():
     """Scrapes the models of all cars for auction on Bring a Trailer
     Consider adding feature that has user input zip code and finds the closest auction in replacement for the "location" key
+    Known problems: 
+    - time isn't displayed in the list properly
+    
     """
     ## currently not working, need to separate keys
 
@@ -154,8 +161,18 @@ def scrape_bat():
         # try:
         car_text = car_titles[i].text
         car_id = i + 1
-        year = car_text.split()[0]
-        model = " ".join(car_text.split()[1:])
+        # year = car_text.split()[0]
+        # model = " ".join(car_text.split()[1:])
+
+        # Find teh first 4-digit number as the year
+        year_match = re.search(r"\b\d{4}\b", car_text)
+        if year_match:
+            year = year_match.group()
+        else:
+            year = None
+
+        # Find the model by removing the year from the text
+        model = car_text.replace(year, "").strip() if year else car_text
         
         try: 
             time_left = combine_times_left[i].text
@@ -179,8 +196,9 @@ def scrape_bat():
     print(len(combine_times_left))
 
     driver.quit()
+    return all_cars
 
-scrape_bat()
-print(all_cars)
+# scrape_bat()
+# print(all_cars)
 
 
