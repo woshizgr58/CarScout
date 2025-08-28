@@ -203,40 +203,6 @@ Returns database statistics.
 }
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is open source and available under the MIT License.
-
-## 🆘 Troubleshooting
-
-### ChromeDriver Issues
-- Ensure ChromeDriver is installed: `brew install chromedriver`
-- Check Chrome browser version compatibility
-- Update ChromeDriver if needed
-
-### Database Issues
-- Delete `auctions.db` and re-run `python database.py`
-- Check JSON file integrity: `python -m json.tool auction_data.json`
-
-### Web App Issues
-- Ensure Flask is installed: `pip install flask`
-- Check port 5000 is available
-- Review browser console for JavaScript errors
-
-## 📞 Support
-
-For issues or questions:
-1. Check the troubleshooting section
-2. Review the code comments
-3. Open an issue on GitHub
 
 ---
 
