@@ -42,8 +42,8 @@ brew install chromedriver
 python main.py
 ```
 This will:
-- Scrape Cars & Bids (195+ auctions)
-- Scrape Bring a Trailer (1,194+ auctions)
+- Scrape Cars & Bids (200+ auctions)
+- Scrape Bring a Trailer (1,000+ auctions)
 - Save data to `auction_data.json`
 
 ### 4. Import to Database
